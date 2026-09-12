@@ -7,7 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -24,7 +24,6 @@
   <style>
     body { font-family: 'Inter', sans-serif; }
     .mono { font-family: 'JetBrains Mono', monospace; }
-    /* Technical scrollbars */
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: #f4f4f5; }
     ::-webkit-scrollbar-thumb { background: #a1a1aa; }
@@ -44,7 +43,7 @@
           <h1 class="font-bold text-zinc-100 text-sm tracking-wide flex items-center gap-2">
             <span id="txt-app-title">Lietuviškas asmens kodas</span>
           </h1>
-          <p class="text-[11px] text-zinc-400 font-mono" id="txt-app-subtitle">Demografinis ir tikimybinis asmens kodo nuspėjamumo modelis</p>
+          <p class="text-[11px] text-zinc-400 font-mono" id="txt-app-subtitle">Demografinis ir administracinis asmens kodo nuspėjamumo modelis</p>
         </div>
       </div>
 
@@ -68,13 +67,13 @@
     <section class="bg-white border border-zinc-300 p-5 sm:p-6 shadow-sm">
       <div class="space-y-2 max-w-5xl">
         <div class="inline-flex items-center gap-2 px-2 py-0.5 bg-zinc-900 text-zinc-100 text-[11px] font-mono uppercase tracking-wider">
-          <span id="hero-badge">Saugumo analizė: Entropijos kolapsas</span>
+          <span id="hero-badge">Saugumo analizė: Entropijos kolapsas ir registro logika</span>
         </div>
         <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-zinc-950" id="hero-heading">
           Kodėl asmens kodas turi tik kelias dešimtis realių variantų?
         </h2>
         <p class="text-zinc-700 text-xs sm:text-sm leading-relaxed" id="hero-desc">
-          Lietuvos asmens kodo struktūra yra <span class="mono font-semibold bg-zinc-100 px-1 border border-zinc-300">GYYMMDDNNNK</span>. Naivus spėjimas teigia, kad trys skaitmenys <span class="mono font-bold text-zinc-900">NNN</span> suteikia 1 000 variantų, o kontrolinis skaitmuo <span class="mono font-bold text-zinc-900">K</span> – dar 10 (iš viso 10 000 kombinacijų). Realybėje kontrolinis skaitmuo yra <strong>100% deterministinis</strong> (Modulus 11), o <span class="mono font-bold text-zinc-900">NNN</span> yra registracijos eilės numeris nuo 001. Žinant gimimo datą ir demografinę statistiką, paieškos aibė susitraukia vos iki 20–45 variantų.
+          Lietuvos asmens kodo formatas yra <span class="mono font-semibold bg-zinc-100 px-1 border border-zinc-300">GYYMMDDNNNK</span>. Naivus požiūris teigia, kad trys skaitmenys <span class="mono font-bold text-zinc-900">NNN</span> suteikia 1 000 variantų, o kontrolinis skaitmuo <span class="mono font-bold text-zinc-900">K</span> – dar 10 (10 000 kombinacijų). Realybėje kontrolinis skaitmuo yra <strong>100% deterministinis</strong> (Modulus 11). Be to, pagal LR Gyventojų registro įstatymo 8 str. 2 d., <span class="mono font-bold text-zinc-900">NNN</span> yra <em>„gimusiųjų tą pačią dieną įrašymo į Gyventojų registrą eilės numeris“</em>. Žinant asmens gimimo vietą ir kontekstą, paieškos aibė susitraukia iki keliolikos ar keliasdešimties variantų.
         </p>
       </div>
     </section>
@@ -86,9 +85,9 @@
         <div class="border-b border-zinc-200 pb-3">
           <h3 class="font-bold text-zinc-900 text-sm uppercase tracking-wider font-mono flex items-center gap-2">
             <span class="w-2 h-2 bg-zinc-900"></span>
-            <span id="form-title">Gimimo parametrai</span>
+            <span id="form-title">Gimimo ir registracijos parametrai</span>
           </h3>
-          <p class="text-xs text-zinc-500 mt-0.5" id="form-desc">Nurodykite žinomus asmens gimimo duomenis</p>
+          <p class="text-xs text-zinc-500 mt-0.5" id="form-desc">Nurodykite žinomus asmens duomenis ir registracijos profilį</p>
         </div>
 
         <form id="calc-form" class="space-y-4" onsubmit="event.preventDefault(); recalculate();">
@@ -133,8 +132,28 @@
             </div>
             <div class="mt-2 flex items-center justify-between text-xs">
               <span class="text-zinc-500 font-mono" id="lbl-weekday-title">Savaitės diena:</span>
-              <span id="weekday-badge" class="font-mono text-xs font-bold text-zinc-900 bg-zinc-200 px-2 py-0.5 border border-zinc-300">Trečiadienis</span>
+              <span id="weekday-badge" class="font-mono text-xs font-bold text-zinc-900 bg-zinc-200 px-2 py-0.5 border border-zinc-300">Pirmadienis</span>
             </div>
+            <!-- Seasonal birth rate variation badge -->
+            <div class="mt-1.5 flex items-center justify-between text-xs">
+              <span class="text-zinc-500 font-mono" id="lbl-season-title">Sezoniškumas:</span>
+              <span id="season-badge" class="font-mono text-[11px] font-bold text-zinc-800 bg-zinc-100 px-2 py-0.5 border border-zinc-300">Pavasario augimas (+2%)</span>
+            </div>
+          </div>
+
+          <!-- Registration Cohort / Context (Addresses high NNN like 254) -->
+          <div>
+            <label class="block text-xs font-mono uppercase tracking-wider text-zinc-600 mb-1.5" id="lbl-cohort">
+              Asmens registracijos tipas (Registro eilė)
+            </label>
+            <select id="cohort-mode" class="w-full px-3 py-2 bg-white border border-zinc-300 text-zinc-900 text-xs font-mono focus:outline-none focus:border-zinc-900" onchange="recalculate()">
+              <option value="local" selected id="opt-cohort-local">Gimęs ir registruotas Lietuvoje (Tiesioginis srautas NNN 001–060)</option>
+              <option value="mixed" id="opt-cohort-mixed">Bendra populiacija (Mišrus modelis su vėlesne registracija)</option>
+              <option value="retrospective" id="opt-cohort-retro">Gimęs užsienyje / Vėlesnis įtraukimas / Leidimas gyventi (NNN 100–300+)</option>
+            </select>
+            <p class="text-[11px] text-zinc-500 mt-1 leading-normal" id="cohort-desc">
+              Vietiniai gimimai ligoninėse numeruojami nuo 001. Užsienyje gimę vaikai, vėlesnės registracijos ar užsieniečiai gauna didesnius NNN numerius (pvz. >200).
+            </p>
           </div>
 
           <!-- Approximate time of birth -->
@@ -146,17 +165,16 @@
               <option value="daytime" id="opt-time-day">Diena / popietė (07:00 – 17:00)</option>
               <option value="evening" id="opt-time-evening">Vakaras / vėlyva naktis (17:00 – 24:00)</option>
             </select>
-            <p class="text-[11px] text-zinc-500 mt-1" id="time-hint-desc">Registracijos numeris NNN pradedamas nuo 001 po vidurnakčio ir didėja dienos eigoje.</p>
           </div>
 
-          <!-- Planned birth / C-section toggle with corrected statistical logic -->
+          <!-- Planned birth / C-section toggle -->
           <div class="pt-2 border-t border-zinc-200">
             <label class="flex items-start gap-2.5 p-3 border border-zinc-300 bg-zinc-50 hover:bg-zinc-100 cursor-pointer">
               <input type="checkbox" id="c-section-toggle" class="mt-0.5 w-4 h-4 text-zinc-900 border-zinc-400 focus:ring-0" onchange="recalculate()">
               <div>
                 <span class="text-xs font-bold text-zinc-900 block" id="lbl-csection">Planuotas gimdymas / Cezario pjūvis</span>
                 <span class="text-[11px] text-zinc-600 block leading-normal mt-0.5" id="csection-desc">
-                  Planinės operacijos vykdomos ligoninių darbo valandomis (08:30–14:30), todėl NNN patenka į dienos vidurio registrą.
+                  Planinės operacijos atliekamos darbo valandomis (08:30–14:30), todėl NNN koncentruojasi dienos vidurio registre.
                 </span>
                 <span id="csection-weekend-warning" class="hidden mt-1.5 text-[10px] font-mono font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 block">
                   Savaitgaliais planinės operacijos praktiškai nevykdomos (tik skubūs atvejai).
@@ -168,19 +186,42 @@
           <!-- Preset Scenarios -->
           <div class="pt-2 border-t border-zinc-200">
             <span class="text-xs font-mono uppercase tracking-wider text-zinc-500 block mb-1.5" id="lbl-presets">Scenarijai:</span>
-            <div class="grid grid-cols-3 gap-1.5">
-              <button type="button" onclick="loadScenario('2008-male-weekday')" class="text-xs font-mono py-1.5 px-2 bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-zinc-800 text-center">
+            <div class="grid grid-cols-4 gap-1.5">
+              <button type="button" onclick="loadScenario('2008-male-weekday')" class="text-xs font-mono py-1.5 px-1 bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-zinc-800 text-center">
                 2008 Berniukas
               </button>
-              <button type="button" onclick="loadScenario('1960-boom')" class="text-xs font-mono py-1.5 px-2 bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-zinc-800 text-center">
+              <button type="button" onclick="loadScenario('2018-high')" class="text-xs font-mono py-1.5 px-1 bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-zinc-800 text-center">
+                2018 (NNN 250)
+              </button>
+              <button type="button" onclick="loadScenario('1960-boom')" class="text-xs font-mono py-1.5 px-1 bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-zinc-800 text-center">
                 1960 „Boom“
               </button>
-              <button type="button" onclick="loadScenario('2023-low')" class="text-xs font-mono py-1.5 px-2 bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-zinc-800 text-center">
+              <button type="button" onclick="loadScenario('2023-low')" class="text-xs font-mono py-1.5 px-1 bg-zinc-100 hover:bg-zinc-200 border border-zinc-300 text-zinc-800 text-center">
                 2023 Dabartis
               </button>
             </div>
           </div>
         </form>
+
+        <!-- Direct Personal Code Inspector Tool -->
+        <div class="pt-4 border-t border-zinc-200 space-y-2">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs font-mono font-bold uppercase tracking-wider text-zinc-800" id="lbl-inspector-title">
+              Tikrinti konkretų asmens kodą
+            </label>
+            <span class="text-[10px] font-mono text-zinc-500" id="lbl-inspector-sub">Mod 11 & NNN analizė</span>
+          </div>
+          <div class="flex gap-2">
+            <input type="text" id="inspector-input" maxlength="11" placeholder="11 skaitmenų asmens kodas" value=""
+              class="flex-grow px-3 py-1.5 bg-white border border-zinc-300 text-xs font-mono text-zinc-900 tracking-wider focus:outline-none focus:border-zinc-900">
+            <button type="button" onclick="inspectCode()" class="px-3 py-1.5 bg-zinc-900 text-white text-xs font-mono font-bold hover:bg-zinc-800">
+              Tikrinti
+            </button>
+          </div>
+          <div id="inspector-result" class="p-2.5 bg-zinc-100 border border-zinc-300 text-[11px] font-mono text-zinc-800 space-y-1">
+            <!-- Dynamically populated analysis -->
+          </div>
+        </div>
       </section>
 
       <!-- Live Metrics and Entropy Analysis Section (7 cols) -->
@@ -209,8 +250,8 @@
             </div>
             <div class="bg-zinc-900 text-white border border-zinc-950 p-2.5">
               <span class="block text-xl font-bold text-zinc-100" id="disp-nnn">NNN</span>
-              <span class="text-[10px] font-sans text-zinc-300 font-bold block mt-0.5" id="seg-nnn">Eilės numeris</span>
-              <span class="text-[9px] font-mono text-zinc-400 block" id="disp-nnn-entropy">~42 galimi</span>
+              <span class="text-[10px] font-sans text-zinc-300 font-bold block mt-0.5" id="seg-nnn">Registro eilė</span>
+              <span class="text-[9px] font-mono text-zinc-400 block" id="disp-nnn-entropy">~42 vietiniai</span>
             </div>
             <div class="bg-zinc-100 border border-zinc-300 p-2.5">
               <span class="block text-xl font-bold text-zinc-900" id="disp-k">K</span>
@@ -229,7 +270,7 @@
             <div class="bg-zinc-50 p-3 border border-zinc-300">
               <span class="text-[10px] text-zinc-500 font-sans block" id="metric-gender-title">Šios lyties naujagimių</span>
               <span class="text-lg font-bold text-zinc-900 mt-0.5 block" id="metric-gender-val">~49</span>
-              <span class="text-[10px] text-zinc-400 font-sans block" id="metric-gender-sub">NNN viršutinė riba</span>
+              <span class="text-[10px] text-zinc-400 font-sans block" id="metric-gender-sub">Tiesioginė NNN riba</span>
             </div>
             <div class="bg-zinc-200 p-3 border border-zinc-400">
               <span class="text-[10px] text-zinc-700 font-sans block font-semibold" id="metric-best-title">Geriausio spėjimo šansas</span>
@@ -269,7 +310,7 @@
 
             <div>
               <div class="flex justify-between mb-1 font-sans text-xs">
-                <span class="text-zinc-950 font-bold" id="bar-context-label">Su papildomu kontekstu (paros laikas, C-pjūvis):</span>
+                <span class="text-zinc-950 font-bold" id="bar-context-label">Su papildomu kontekstu (profilis, laikas, C-pjūvis):</span>
                 <span class="mono text-zinc-950 font-extrabold" id="bar-context-val">1 iš 21 (~4.76%)</span>
               </div>
               <div class="w-full bg-zinc-200 h-2 border border-zinc-300">
@@ -281,7 +322,7 @@
           <div class="p-2.5 bg-zinc-50 border border-zinc-300 text-xs text-zinc-800 flex items-start gap-2 mt-2">
             <span class="font-mono font-bold text-zinc-900">!</span>
             <p id="alert-reduction-text" class="text-[11px] leading-relaxed">
-              Pirmieji 10 labiausiai tikėtinų asmens kodų sudaro <strong>35–45% visos tikimybės</strong>. Šis faktas paverčia asmens kodą netinkamu bet kokiam autentifikavimo tikslui.
+              Vietiniam srautui pirmieji 10 labiausiai tikėtinų asmens kodų sudaro <strong>35–50% visos tikimybės</strong>. Šis faktas paverčia asmens kodą netinkamu bet kokiam autentifikavimo tikslui.
             </p>
           </div>
         </div>
@@ -299,7 +340,7 @@
             <span class="text-xs font-mono bg-zinc-100 text-zinc-800 px-2 py-0.5 border border-zinc-300" id="tbl-count-badge">Top 100</span>
           </h3>
           <p class="text-xs text-zinc-500 mt-0.5" id="tbl-subheading">
-            Visi matematiškai galiojantys kodai su apskaičiuotais Modulus 11 kontroliniais skaitmenimis ir statistinėmis tikimybėmis.
+            Visi matematiškai galiojantys kodai su apskaičiuotais Modulus 11 kontroliniais skaitmenimis ir nustatytomis tikimybėmis.
           </p>
         </div>
 
@@ -319,7 +360,8 @@
             <option value="25">25 įrašai</option>
             <option value="50">50 įrašų</option>
             <option value="100" selected>100 įrašų</option>
-            <option value="150">Visi galimi</option>
+            <option value="200">200 įrašų</option>
+            <option value="300">300 įrašų (Išplėstinis)</option>
           </select>
         </div>
       </div>
@@ -342,7 +384,7 @@
         </table>
       </div>
       <div class="p-3 bg-zinc-50 border-t border-zinc-200 text-zinc-500 text-xs flex justify-between items-center font-mono">
-        <span id="tbl-footer-note">Pastaba: NNN > 070 tikimybė artėja prie 0 dėl demografinių gimstamumo ribų.</span>
+        <span id="tbl-footer-note">Pastaba: NNN 001–060 atitinka tiesioginius vietinius gimimus; NNN > 100 atsiranda dėl vėlesnių įrašų, konsulinių registracijų ar užsieniečių.</span>
         <span class="text-zinc-900 font-bold" id="tbl-total-shown">Rodoma: 100</span>
       </div>
     </section>
@@ -368,7 +410,7 @@
                 <th class="py-2 px-3" id="th-hist-annual">Gimimų per metus</th>
                 <th class="py-2 px-3" id="th-hist-daily">Vid. per dieną</th>
                 <th class="py-2 px-3" id="th-hist-gender">Šiai lyčiai / dieną</th>
-                <th class="py-2 px-3" id="th-hist-space">Praktinė NNN aibė</th>
+                <th class="py-2 px-3" id="th-hist-space">Vietinė NNN aibė</th>
               </tr>
             </thead>
             <tbody id="hist-tbody" class="divide-y divide-zinc-200 mono">
@@ -378,7 +420,7 @@
         </div>
 
         <div class="p-3 bg-zinc-50 text-xs text-zinc-700 leading-relaxed border border-zinc-300" id="hist-explanation">
-          <strong>Demografinė taisyklė:</strong> 1960–1985 m. baby-boom laikotarpiu Lietuvoje gimdavo virš 55 000–62 000 vaikų per metus (~80 berniukų per dieną), todėl NNN galėjo pasiekti ~90–100. 2023–2024 m., gimstamumui nukritus iki ~20 000 per metus, NNN praktiškai niekada neviršija 35–45.
+          <strong>Demografinė taisyklė:</strong> 1960–1985 m. baby-boom laikotarpiu Lietuvoje gimdavo virš 55 000–62 000 vaikų per metus (~80 berniukų per dieną), todėl NNN galėjo pasiekti ~90–100. 2023–2024 m., gimstamumui nukritus iki ~20 000 per metus, vietinis NNN praktiškai niekada neviršija 35–45.
         </div>
       </section>
 
@@ -386,20 +428,23 @@
       <section class="lg:col-span-5 bg-white border border-zinc-300 p-5 shadow-sm space-y-3">
         <h3 class="font-bold text-zinc-900 text-xs font-mono uppercase tracking-wider flex items-center gap-2 border-b border-zinc-200 pb-2">
           <span class="w-2 h-2 bg-zinc-900"></span>
-          <span id="algo-heading">Kontrolinio skaitmens K algoritmas</span>
+          <span id="algo-heading">Registro taisyklės ir Modulus 11</span>
         </h3>
-        <p class="text-xs text-zinc-700 leading-relaxed" id="algo-desc">
-          Kontrolinis skaitmuo K nėra atsitiktinis ir nėra paslaptis. Tai griežtas <strong>Modulus 11</strong> algoritmas, užtikrinantis klaidų patikrą:
-        </p>
+        
+        <div class="p-3 bg-zinc-50 border border-zinc-300 text-xs text-zinc-800 space-y-1.5">
+          <span class="font-bold font-mono text-zinc-950 block" id="lbl-why-high-nnn">KODĖL EGZISTUOJA NNN > 200?</span>
+          <p class="text-[11px] leading-relaxed text-zinc-700" id="desc-why-high-nnn">
+            Pagal <strong>LR Gyventojų registro įstatymo 8 str. 2 d.</strong>, NNN yra <em>„įrašymo į Gyventojų registrą eilės numeris“</em>. Tai nėra gimimo valandos eilė ligoninėje! Jei vaikas gimė užsienyje (konsulinė apskaita), gimimas registruotas vėliau arba užsieniečiui išduodamas leidimas gyventi Lietuvoje, jam suteikiamas sekantis laisvas tos gimimo datos numeris, kuris bėgant metams pakyla iki 200–300+.
+          </p>
+        </div>
 
         <div class="bg-zinc-900 text-zinc-200 p-3 text-xs font-mono space-y-1.5 overflow-x-auto border border-zinc-800">
-          <div class="text-zinc-400">// 1 žingsnis: W1 = [1,2,3,4,5,6,7,8,9,1]</div>
-          <div>S1 = Σ (d_i × W1_i)</div>
-          <div>R1 = S1 mod 11</div>
+          <div class="text-zinc-400">// Modulus 11 algoritmas (100% deterministinis)</div>
+          <div>W1 = [1,2,3,4,5,6,7,8,9,1]</div>
+          <div>S1 = Σ (d_i × W1_i); R1 = S1 mod 11</div>
           <div class="text-zinc-400">Jei R1 ≠ 10, tai K = R1</div>
-          <div class="text-zinc-400 pt-1">// 2 žingsnis (jei R1 == 10): W2 = [3,4,5,6,7,8,9,1,2,3]</div>
-          <div>S2 = Σ (d_i × W2_i)</div>
-          <div>R2 = S2 mod 11</div>
+          <div class="text-zinc-400 pt-1">// Jei R1 == 10: W2 = [3,4,5,6,7,8,9,1,2,3]</div>
+          <div>S2 = Σ (d_i × W2_i); R2 = S2 mod 11</div>
           <div class="text-zinc-400">Jei R2 ≠ 10, K = R2; kitu atveju K = 0</div>
         </div>
 
@@ -408,7 +453,7 @@
             SAUGUMO PRINCIPAS: Identifikatorius nėra Slaptažodis
           </span>
           <p class="text-[11px] leading-relaxed text-zinc-700" id="sec-rule-desc">
-            Asmens kodas yra <strong>viešas identifikatorius</strong> (kaip IBAN sąskaitos numeris ar automobilio valstybinis numeris), o ne <strong>autentifikatorius</strong>. Įmonės ar įstaigos, naudojančios asmens kodą asmens tapatybei patvirtinti telefonu, sukelia rimtą saugumo riziką.
+            Asmens kodas yra <strong>viešas identifikatorius</strong> (kaip IBAN sąskaitos numeris ar automobilio valstybinis numeris), o ne <strong>autentifikatorius</strong>. Įmonės ar įstaigos, naudojančios asmens kodą asmens tapatybei patvirtinti telefonu ar savitarnoje, sukelia rimtą saugumo riziką.
           </p>
         </div>
       </section>
@@ -454,54 +499,79 @@
       { year: 2008, births: 35065, label: "2008 m. (Nagrinėjamas)" },
       { year: 2010, births: 30676, label: "2010 m." },
       { year: 2015, births: 31475, label: "2015 m." },
+      { year: 2018, births: 28149, label: "2018 m. (Pavyzdys)" },
       { year: 2020, births: 25144, label: "2020 m. (Pandemija)" },
       { year: 2023, births: 20600, label: "2023 m. (Istorinis minimumas)" },
       { year: 2024, births: 19800, label: "2024 m. (Išankstiniai duom.)" }
     ];
 
-    // Internationalization Dictionary
+    // Monthly seasonality multiplier based on multi-decade Lithuanian birth data (Statistics Lithuania)
+    const MONTH_SEASONALITY = [
+      { factor: 0.93, labelLt: "-7% (Žiemos atoslūgis)", labelEn: "-7% (Winter Trough)" },
+      { factor: 0.92, labelLt: "-8% (Žiemos minimumas)", labelEn: "-8% (Winter Minimum)" },
+      { factor: 0.97, labelLt: "-3% (Pavasario pradžia)", labelEn: "-3% (Early Spring)" },
+      { factor: 0.98, labelLt: "-2% (Pavasario vidurkis)", labelEn: "-2% (Mid Spring)" },
+      { factor: 1.02, labelLt: "+2% (Pavasario augimas)", labelEn: "+2% (Late Spring Rise)" },
+      { factor: 1.05, labelLt: "+5% (Vasaros pradžia)", labelEn: "+5% (Early Summer)" },
+      { factor: 1.09, labelLt: "+9% (Metinis vasaros pikas)", labelEn: "+9% (Annual Summer Peak)" },
+      { factor: 1.08, labelLt: "+8% (Vasaros pikas)", labelEn: "+8% (Mid-Summer Peak)" },
+      { factor: 1.06, labelLt: "+6% (Ankstyvas ruduo)", labelEn: "+6% (Early Autumn)" },
+      { factor: 1.01, labelLt: "+1% (Rudens vidurkis)", labelEn: "+1% (Mid Autumn)" },
+      { factor: 0.95, labelLt: "-5% (Vėlyvas ruduo)", labelEn: "-5% (Late Autumn Drop)" },
+      { factor: 0.93, labelLt: "-7% (Žiemos atoslūgis)", labelEn: "-7% (Winter Trough)" }
+    ];
+
     const i18n = {
       lt: {
         appTitle: "Lietuviškas asmens kodas",
-        appSubtitle: "Demografinis ir tikimybinis asmens kodo nuspėjamumo modelis",
-        heroBadge: "Saugumo analizė: Entropijos kolapsas",
+        appSubtitle: "Demografinis ir administracinis asmens kodo nuspėjamumo modelis",
+        heroBadge: "Saugumo analizė: Entropijos kolapsas ir registro logika",
         heroHeading: "Kodėl asmens kodas turi tik kelias dešimtis realių variantų?",
-        heroDesc: "Lietuvos asmens kodo struktūra yra GYYMMDDNNNK. Naivus spėjimas teigia, kad trys skaitmenys NNN suteikia 1 000 variantų, o kontrolinis skaitmuo K – dar 10 (iš viso 10 000 kombinacijų). Realybėje kontrolinis skaitmuo yra 100% deterministinis (Modulus 11), o NNN yra registracijos eilės numeris nuo 001. Žinant gimimo datą ir demografinę statistiką, paieškos aibė susitraukia vos iki 20–45 variantų.",
-        formTitle: "Gimimo parametrai",
-        formDesc: "Nurodykite žinomus asmens gimimo duomenis",
+        heroDesc: "Lietuvos asmens kodo formatas yra GYYMMDDNNNK. Naivus požiūris teigia, kad trys skaitmenys NNN suteikia 1 000 variantų, o kontrolinis skaitmuo K – dar 10 (10 000 kombinacijų). Realybėje kontrolinis skaitmuo yra 100% deterministinis (Modulus 11). Be to, pagal LR Gyventojų registro įstatymo 8 str. 2 d., NNN yra „gimusiųjų tą pačią dieną įrašymo į Gyventojų registrą eilės numeris“. Žinant asmens gimimo vietą ir kontekstą, paieškos aibė susitraukia iki keliolikos ar keliasdešimties variantų.",
+        formTitle: "Gimimo ir registracijos parametrai",
+        formDesc: "Nurodykite žinomus asmens duomenis ir registracijos profilį",
         gender: "Lytis",
         male: "Vyras",
         female: "Moteris",
         dob: "Gimimo data",
         weekdayTitle: "Savaitės diena:",
+        seasonTitle: "Sezoniškumas:",
+        cohortLabel: "Asmens registracijos tipas (Registro eilė)",
+        cohortLocal: "Gimęs ir registruotas Lietuvoje (Tiesioginis srautas NNN 001–060)",
+        cohortMixed: "Bendra populiacija (Mišrus modelis su vėlesne registracija)",
+        cohortRetro: "Gimęs užsienyje / Vėlesnis įtraukimas / Leidimas gyventi (NNN 100–300+)",
+        cohortDesc: "Vietiniai gimimai ligoninėse numeruojami nuo 001. Užsienyje gimę vaikai, vėlesnės registracijos ar užsieniečiai gauna didesnius NNN numerius (pvz. >200).",
+        inspectorTitle: "Tikrinti konkretų asmens kodą",
+        inspectorSub: "Mod 11 & NNN analizė",
+        inspectorValid: "KODAS GALIOJANTIS (Modulus 11 atitinka)",
+        inspectorInvalid: "KODAS NETEISINGAS (Kontrolinis skaitmuo nesutampa)",
         timeHint: "Gimimo paros metas (jei žinomas)",
         timeUnknown: "Nežinoma / Bet koks paros metas",
         timeEarly: "Ankstyvas rytas / naktis (00:00 – 07:00)",
         timeDay: "Diena / popietė (07:00 – 17:00)",
         timeEvening: "Vakaras / vėlyva naktis (17:00 – 24:00)",
-        timeHintDesc: "Registracijos numeris NNN pradedamas nuo 001 po vidurnakčio ir didėja dienos eigoje.",
         csection: "Planuotas gimdymas / Cezario pjūvis",
-        csectionDesc: "Planinės operacijos vykdomos ligoninių darbo valandomis (08:30–14:30), todėl NNN patenka į dienos vidurio registrą.",
+        csectionDesc: "Planinės operacijos atliekamos darbo valandomis (08:30–14:30), todėl NNN koncentruojasi dienos vidurio registre.",
         csectionWeekend: "Savaitgaliais planinės operacijos praktiškai nevykdomos (tik skubūs atvejai).",
         presets: "Scenarijai:",
         anatomyTitle: "Asmens kodo struktūra ir entropija",
         segG: "Lytis / Amžius (G)",
         segDate: "Metai/Mėn/Diena",
-        segNnn: "Eilės numeris",
+        segNnn: "Registro eilė",
         segK: "Kontrolinis",
         metricBirthsTitle: "Gimimų per parą šalyje",
-        metricBirthsSub: "Nacionalinis vidurkis",
+        metricBirthsSub: "Atsižvelgus į sezoną ir dieną",
         metricGenderTitle: "Šios lyties naujagimių",
-        metricGenderSub: "NNN viršutinė riba",
+        metricGenderSub: "Tiesioginė NNN riba",
         metricBestTitle: "Geriausio spėjimo šansas",
         reductionBadge: "sumažėjimas",
         comparisonHeading: "Entropijos sumažėjimas lyginant su aklu spėjimu",
         barNaiveLabel: "Naivus požiūris (tariamas 3 skaitmenų atsitiktinumas):",
         barDemoLabel: "Gimstamumo statistika (tik data ir lytis):",
-        barContextLabel: "Su papildomu kontekstu (paros laikas, C-pjūvis):",
-        alertReduction: "Pirmieji 10 labiausiai tikėtinų asmens kodų sudaro <strong>35–45% visos tikimybės</strong>. Šis faktas paverčia asmens kodą netinkamu bet kokiam autentifikavimo tikslui.",
+        barContextLabel: "Su papildomu kontekstu (profilis, laikas, C-pjūvis):",
+        alertReduction: "Vietiniam srautui pirmieji 10 labiausiai tikėtinų asmens kodų sudaro <strong>35–50% visos tikimybės</strong>. Šis faktas paverčia asmens kodą netinkamu bet kokiam autentifikavimo tikslui.",
         tblHeading: "Labiausiai tikėtinų asmens kodų sąrašas",
-        tblSubheading: "Visi matematiškai galiojantys kodai su apskaičiuotais Modulus 11 kontroliniais skaitmenimis ir statistinėmis tikimybėmis.",
+        tblSubheading: "Visi matematiškai galiojantys kodai su apskaičiuotais Modulus 11 kontroliniais skaitmenimis ir nustatytomis tikimybėmis.",
         sortProb: "Pagal tikimybę",
         sortSeq: "Pagal NNN eilę",
         thRank: "#",
@@ -512,7 +582,7 @@
         thAction: "Veiksmas",
         copyBtn: "Kopijuoti",
         copiedToast: "Nukopijuota į iškarpinę",
-        tblFooterNote: "Pastaba: NNN > 070 tikimybė artėja prie 0 dėl demografinių gimstamumo ribų.",
+        tblFooterNote: "Pastaba: NNN 001–060 atitinka tiesioginius vietinius gimimus; NNN > 100 atsiranda dėl vėlesnių įrašų, konsulinių registracijų ar užsieniečių.",
         tblTotalShown: "Rodoma: ",
         histHeading: "Gimstamumo dinamika Lietuvoje (1950 – 2024 m.)",
         histSub: "Kodėl 1960 m. asmens kodą atspėti buvo sunkiau nei 2024 m.?",
@@ -520,12 +590,13 @@
         thHistAnnual: "Gimimų per metus",
         thHistDaily: "Vid. per dieną",
         thHistGender: "Šiai lyčiai / dieną",
-        thHistSpace: "Praktinė NNN aibė",
-        histExplanation: "<strong>Demografinė taisyklė:</strong> 1960–1985 m. baby-boom laikotarpiu Lietuvoje gimdavo virš 55 000–62 000 vaikų per metus (~80 berniukų per dieną), todėl NNN galėjo pasiekti ~90–100. 2023–2024 m., gimstamumui nukritus iki ~20 000 per metus, NNN praktiškai niekada neviršija 35–45.",
-        algoHeading: "Kontrolinio skaitmens K algoritmas",
-        algoDesc: "Kontrolinis skaitmuo K nėra atsitiktinis ir nėra paslaptis. Tai griežtas <strong>Modulus 11</strong> algoritmas, užtikrinantis klaidų patikrą:",
+        thHistSpace: "Vietinė NNN aibė",
+        histExplanation: "<strong>Demografinė taisyklė:</strong> 1960–1985 m. baby-boom laikotarpiu Lietuvoje gimdavo virš 55 000–62 000 vaikų per metus (~80 berniukų per dieną), todėl NNN galėjo pasiekti ~90–100. 2023–2024 m., gimstamumui nukritus iki ~20 000 per metus, vietinis NNN praktiškai niekada neviršija 35–45.",
+        algoHeading: "Registro taisyklės ir Modulus 11",
+        whyHighNnnTitle: "KODĖL EGZISTUOJA NNN > 200?",
+        whyHighNnnDesc: "Pagal LR Gyventojų registro įstatymo 8 str. 2 d., NNN yra „įrašymo į Gyventojų registrą eilės numeris“. Tai nėra gimimo valandos eilė ligoninėje! Jei vaikas gimė užsienyje (konsulinė apskaita), gimimas registruotas vėliau arba užsieniečiui išduodamas leidimas gyventi Lietuvoje, jam suteikiamas sekantis laisvas tos gimimo datos numeris, kuris bėgant metams pakyla iki 200–300+.",
         secRuleTitle: "SAUGUMO PRINCIPAS: Identifikatorius nėra Slaptažodis",
-        secRuleDesc: "Asmens kodas yra <strong>viešas identifikatorius</strong> (kaip IBAN sąskaitos numeris ar automobilio valstybinis numeris), o ne <strong>autentifikatorius</strong>. Įmonės ar įstaigos, naudojančios asmens kodą asmens tapatybei patvirtinti telefonu, sukelia rimtą saugumo riziką.",
+        secRuleDesc: "Asmens kodas yra viešas identifikatorius (kaip IBAN sąskaitos numeris ar automobilio valstybinis numeris), o ne autentifikatorius. Įmonės ar įstaigos, naudojančios asmens kodą asmens tapatybei patvirtinti telefonu ar savitarnoje, sukelia rimtą saugumo riziką.",
         footerCopy: "Lietuvos asmens kodo matematinio modeliavimo ir entropijos analizės įrankis.",
         weekdays: ["Sekmadienis", "Pirmadienis", "Antradienis", "Trečiadienis", "Ketvirtadienis", "Penktadienis", "Šeštadienis"],
         yearLabel: "Metai",
@@ -535,43 +606,52 @@
       },
       en: {
         appTitle: "Lithuanian Personal Code",
-        appSubtitle: "Demographic and probabilistic predictability model of the Asmens Kodas",
-        heroBadge: "Security Analysis: Entropy Collapse",
+        appSubtitle: "Demographic and administrative predictability model of the Asmens Kodas",
+        heroBadge: "Security Analysis: Entropy Collapse & Registry Logic",
         heroHeading: "Why a Personal Code Has Only a Few Dozen Real Variants",
-        heroDesc: "The Lithuanian personal code is formatted as GYYMMDDNNNK. A naive guess assumes NNN provides 1,000 possibilities and checksum K provides 10 (10,000 total). In reality, checksum K is 100% deterministic (Modulus 11), and NNN is a sequential registration counter starting from 001. Using actual historical birth data, the search pool shrinks to just 20–45 candidates.",
-        formTitle: "Birth Parameters",
-        formDesc: "Enter known parameters regarding the subject's birth",
+        heroDesc: "The Lithuanian personal code is formatted as GYYMMDDNNNK. A naive guess assumes NNN provides 1,000 possibilities and checksum K provides 10 (10,000 total). In reality, checksum K is 100% deterministic (Modulus 11). Under Art. 8 of the Population Register Law, NNN is the sequential entry order in the central register. With demographic and cohort context, the candidate pool shrinks to just a few dozen combinations.",
+        formTitle: "Birth & Registration Parameters",
+        formDesc: "Enter known parameters regarding the subject and registration cohort",
         gender: "Gender",
         male: "Male",
         female: "Female",
         dob: "Date of Birth",
         weekdayTitle: "Day of Week:",
+        seasonTitle: "Seasonality:",
+        cohortLabel: "Registration Cohort (Registry Queue)",
+        cohortLocal: "Born & Registered in Lithuania (Direct hospital queue NNN 001–060)",
+        cohortMixed: "General Population (Mixed model with retrospective additions)",
+        cohortRetro: "Born Abroad / Late Registration / Residence Permit (NNN 100–300+)",
+        cohortDesc: "Direct hospital births start at 001. Children born abroad, retrospective registrations, and residence permit holders receive higher NNN values (e.g. >200).",
+        inspectorTitle: "Inspect Specific Personal Code",
+        inspectorSub: "Mod 11 & NNN Analysis",
+        inspectorValid: "CODE VALID (Modulo 11 matches)",
+        inspectorInvalid: "INVALID CODE (Checksum mismatch)",
         timeHint: "Time of Day (if known)",
         timeUnknown: "Unknown / Any time",
         timeEarly: "Early morning / night (00:00 – 07:00)",
         timeDay: "Daytime / afternoon (07:00 – 17:00)",
         timeEvening: "Evening / late night (17:00 – 24:00)",
-        timeHintDesc: "Sequence number NNN starts at 001 after midnight and increments as registrations arrive.",
         csection: "Planned Delivery / Elective C-Section",
-        csectionDesc: "Scheduled surgeries occur strictly during hospital surgical shifts (08:30–14:30), clustering NNN in the mid-day cohort.",
+        csectionDesc: "Scheduled surgeries occur strictly during surgical shifts (08:30–14:30), clustering NNN in the mid-day cohort.",
         csectionWeekend: "Elective surgeries are virtually never scheduled on weekends (emergencies only).",
         presets: "Scenarios:",
         anatomyTitle: "Personal Code Structure & Entropy",
         segG: "Gender / Century (G)",
         segDate: "YY/MM/DD",
-        segNnn: "Sequence Number",
+        segNnn: "Registry Queue",
         segK: "Checksum",
         metricBirthsTitle: "National Daily Births",
-        metricBirthsSub: "Daily average for year",
+        metricBirthsSub: "Adjusted for season & day",
         metricGenderTitle: "Births of this Sex",
-        metricGenderSub: "Upper limit for NNN",
+        metricGenderSub: "Direct NNN baseline",
         metricBestTitle: "Best Single Guess Odds",
         reductionBadge: "reduction",
         comparisonHeading: "Entropy Collapse vs. Naive Guessing",
         barNaiveLabel: "Naive assumption (presumed 3-digit random):",
-        barDemoLabel: "Demographic reality (date & gender only):",
-        barContextLabel: "With contextual hints (time of day, C-section):",
-        alertReduction: "The top 10 most probable IDs capture <strong>35–45% of the total probability</strong>. This makes personal codes fundamentally unsuitable for authentication.",
+        barDemoLabel: "Demographic reality (date and sex only):",
+        barContextLabel: "With contextual hints (cohort, time, C-section):",
+        alertReduction: "For local births, the top 10 most probable IDs capture <strong>35–50% of total probability</strong>. This makes personal codes completely unfit for authentication.",
         tblHeading: "Ranked Candidate ID Predictions",
         tblSubheading: "All mathematically valid personal codes with verified Modulo-11 checksums and probabilistic weights.",
         sortProb: "By Probability",
@@ -584,7 +664,7 @@
         thAction: "Action",
         copyBtn: "Copy",
         copiedToast: "Copied to clipboard",
-        tblFooterNote: "Note: Probability for NNN > 070 converges to 0 due to demographic birth caps.",
+        tblFooterNote: "Note: NNN 001–060 covers direct hospital births; NNN > 100 arises from retrospective registrations, consular abroad entries, or non-citizens.",
         tblTotalShown: "Showing: ",
         histHeading: "Lithuanian Birth Trends (1950 – 2024)",
         histSub: "Why guessing a 1960 code was harder than guessing a 2024 code",
@@ -592,12 +672,13 @@
         thHistAnnual: "Annual Births",
         thHistDaily: "Avg. / Day",
         thHistGender: "Per Gender / Day",
-        thHistSpace: "Effective NNN Space",
-        histExplanation: "<strong>Demographic Rule:</strong> During the 1960–1985 baby boom, over 55,000–62,000 children were born annually (~80 boys per day), pushing NNN up to ~90–100. In 2023–2024, annual births dropped to ~20,000, meaning NNN practically never exceeds 35–45.",
-        algoHeading: "Modulo 11 Checksum Algorithm",
-        algoDesc: "The checksum digit is not secret. It is a strictly deterministic <strong>Modulus 11</strong> formula designed for error detection:",
+        thHistSpace: "Local NNN Space",
+        histExplanation: "During the 1960–1985 baby boom, over 55,000–62,000 children were born annually (~80 boys per day), pushing NNN up to ~90–100. In 2023–2024, annual births dropped to ~20,000, meaning local NNN practically never exceeds 35–45.",
+        algoHeading: "Registry Rules & Modulo 11",
+        whyHighNnnTitle: "WHY DO NNN > 200 OCCUR?",
+        whyHighNnnDesc: "Under Art. 8 of the Population Register Law, NNN is the sequential entry order into the register, not hospital delivery room order. Children born abroad registered via consulates, late declarations, or foreign nationals obtaining residence permits receive the next available slot for their birth date, which climbs to 200–300+ over the years.",
         secRuleTitle: "SECURITY MANDATE: Identification is NOT Authentication",
-        secRuleDesc: "A Personal Code is a <strong>public identifier</strong> (like an IBAN or license plate), NOT an <strong>authenticator</strong>. Organizations using personal codes to authenticate callers create a severe vulnerability.",
+        secRuleDesc: "A Personal Code is a public identifier (like an IBAN or license plate), NOT an authenticator. Organizations using personal codes to authenticate callers create a severe vulnerability.",
         footerCopy: "Lithuanian Personal ID Mathematical Modeling and Entropy Analysis Tool.",
         weekdays: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
         yearLabel: "Year",
@@ -607,11 +688,8 @@
       }
     };
 
-    // Populate and manage Year, Month, Day dropdowns
     function initDateDropdowns() {
       const ySelect = document.getElementById('dob-year');
-
-      // Populate Years (2026 down to 1920)
       ySelect.innerHTML = '';
       for (let y = 2026; y >= 1920; y--) {
         const opt = document.createElement('option');
@@ -620,8 +698,6 @@
         if (y === 2008) opt.selected = true;
         ySelect.appendChild(opt);
       }
-
-      // Populate Months & Days with default (2008-05-14)
       renderMonthOptions(5);
       updateDaysDropdown(14);
     }
@@ -679,7 +755,6 @@
       updateDaysDropdown(day);
     }
 
-    // Annual births calculation
     function getAnnualBirths(year) {
       if (year <= DEMOGRAPHICS[0].year) return DEMOGRAPHICS[0].births;
       if (year >= DEMOGRAPHICS[DEMOGRAPHICS.length - 1].year) return DEMOGRAPHICS[DEMOGRAPHICS.length - 1].births;
@@ -695,7 +770,6 @@
       return 32000;
     }
 
-    // Official Modulo 11 Checksum calculation
     function calculateChecksum(tenDigitsStr) {
       const d = tenDigitsStr.split('').map(Number);
       const w1 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 1];
@@ -713,7 +787,6 @@
       return 0;
     }
 
-    // Determine the first digit G
     function determineGenderDigit(year, gender) {
       if (year >= 1801 && year <= 1900) return gender === 'male' ? 1 : 2;
       if (year >= 1901 && year <= 2000) return gender === 'male' ? 3 : 4;
@@ -721,14 +794,11 @@
       return gender === 'male' ? 5 : 6;
     }
 
-    // Gaussian bell curve
     function gaussian(x, mean, sigma) {
       const factor = 1 / (sigma * Math.sqrt(2 * Math.PI));
       return factor * Math.exp(-0.5 * Math.pow((x - mean) / sigma, 2));
     }
-  </script>
 
-  <script>
     function recalculate() {
       const gender = document.querySelector('input[name="gender"]:checked').value;
       const ySelect = document.getElementById('dob-year');
@@ -748,6 +818,7 @@
       const dateObj = new Date(year, month - 1, day);
       const dayOfWeek = dateObj.getDay(); // 0: Sun, 1: Mon, ...
 
+      const cohortMode = document.getElementById('cohort-mode').value;
       const timeHint = document.getElementById('time-hint').value;
       const isCSection = document.getElementById('c-section-toggle').checked;
 
@@ -755,6 +826,11 @@
       const weekdayName = i18n[currentLang].weekdays[dayOfWeek];
       const weekdayBadge = document.getElementById('weekday-badge');
       weekdayBadge.textContent = weekdayName;
+
+      // Update Seasonality Badge
+      const seasonData = MONTH_SEASONALITY[month - 1];
+      const seasonBadge = document.getElementById('season-badge');
+      seasonBadge.textContent = currentLang === 'lt' ? seasonData.labelLt : seasonData.labelEn;
 
       // Check weekend warning for C-section
       const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
@@ -766,25 +842,21 @@
         weekendWarn.classList.add('hidden');
       }
 
-      // 1. Compute Base Births:
-      // Macro demographic reality: across Lithuania, weekdays have slightly more births (Tue-Thu peak ~1.08)
-      // because hospital scheduled deliveries take place Mon-Fri. Weekends drop to ~0.80.
+      // Demographic calculation
       const annualBirths = getAnnualBirths(year);
       const baseDailyAvg = annualBirths / 365.25;
       const weekdayWeights = [0.80, 1.02, 1.08, 1.09, 1.07, 1.02, 0.82];
       const weekdayFactor = weekdayWeights[dayOfWeek];
+      const seasonFactor = seasonData.factor;
 
-      // Sex ratio at birth in Lithuania (~1.055 boys per 1 girl, ~51.3% boys)
       const genderRatio = (gender === 'male') ? 0.513 : 0.487;
-
-      // Total births in the nation on that day (DOES NOT increase just because a specific birth was planned)
-      const totalDailyBirths = baseDailyAvg * weekdayFactor;
+      const totalDailyBirths = baseDailyAvg * weekdayFactor * seasonFactor;
       const expectedDailyBirthsForGender = totalDailyBirths * genderRatio;
 
       document.getElementById('metric-births-val').textContent = `~${Math.round(totalDailyBirths)}`;
       document.getElementById('metric-gender-val').textContent = `~${Math.round(expectedDailyBirthsForGender)}`;
 
-      // 2. Anatomy card
+      // Anatomy card preview
       const G = determineGenderDigit(year, gender);
       const yy = yearStr.slice(-2);
       const mm = monthStr.padStart(2, '0');
@@ -795,43 +867,66 @@
       document.getElementById('disp-date').textContent = `${yy}${mm}${dd}`;
       document.getElementById('anatomy-preview').textContent = `${prefix}NNNK`;
 
-      // 3. Probabilistic weighting of NNN
-      const maxNNN = Math.max(70, Math.min(250, Math.ceil(expectedDailyBirthsForGender * 1.85)));
-      document.getElementById('disp-nnn-entropy').textContent = `~${Math.round(expectedDailyBirthsForGender * 1.1)} galimi`;
+      // Probabilistic weighting of NNN (1 to 300)
+      const maxNNN = 300;
+      if (cohortMode === 'local') {
+        document.getElementById('disp-nnn-entropy').textContent = `~${Math.round(expectedDailyBirthsForGender * 1.1)} vietiniai`;
+      } else if (cohortMode === 'retrospective') {
+        document.getElementById('disp-nnn-entropy').textContent = `100–300+ vėlesni`;
+      } else {
+        document.getElementById('disp-nnn-entropy').textContent = `Mišrus modelis`;
+      }
 
       const weights = [];
       let totalWeight = 0;
 
       for (let n = 1; n <= maxNNN; n++) {
-        let w = 1.0;
+        let w = 0.0001; // small baseline
 
-        // Tail probability drops sharply beyond expected daily births
-        if (n > expectedDailyBirthsForGender) {
-          const excess = n - expectedDailyBirthsForGender;
-          w *= Math.exp(-0.12 * excess);
-        }
-
-        // Time hint adjustments
-        if (timeHint === 'early_morning') {
-          w *= gaussian(n, Math.max(3, expectedDailyBirthsForGender * 0.15), Math.max(4, expectedDailyBirthsForGender * 0.18));
-        } else if (timeHint === 'daytime') {
-          w *= gaussian(n, expectedDailyBirthsForGender * 0.52, expectedDailyBirthsForGender * 0.28);
-        } else if (timeHint === 'evening') {
-          w *= gaussian(n, expectedDailyBirthsForGender * 0.88, expectedDailyBirthsForGender * 0.25);
-        } else {
-          w *= gaussian(n, expectedDailyBirthsForGender * 0.50, expectedDailyBirthsForGender * 0.45) + 0.05;
-        }
-
-        // Planned birth / C-section: does NOT increase daily births, but tightly clusters
-        // this baby's registration in the midday surgical shift (08:30–14:30)
-        if (isCSection) {
-          if (isWeekend) {
-            // Unlikely to have been scheduled; acts as low baseline emergency
-            w *= 0.2;
+        if (cohortMode === 'local') {
+          // Local births strictly follow delivery room sequence (001 - expectedDailyBirths)
+          if (timeHint === 'early_morning') {
+            w = gaussian(n, Math.max(3, expectedDailyBirthsForGender * 0.15), Math.max(3, expectedDailyBirthsForGender * 0.18));
+          } else if (timeHint === 'daytime') {
+            w = gaussian(n, expectedDailyBirthsForGender * 0.52, expectedDailyBirthsForGender * 0.28);
+          } else if (timeHint === 'evening') {
+            w = gaussian(n, expectedDailyBirthsForGender * 0.88, expectedDailyBirthsForGender * 0.25);
           } else {
-            // Tight clustering during daytime operating room shift (~35% to 55% of the day's total batch)
-            w *= gaussian(n, expectedDailyBirthsForGender * 0.42, Math.max(3, expectedDailyBirthsForGender * 0.15));
+            w = gaussian(n, expectedDailyBirthsForGender * 0.50, expectedDailyBirthsForGender * 0.40) + 0.02;
           }
+
+          if (isCSection) {
+            if (isWeekend) {
+              w *= 0.2;
+            } else {
+              w *= gaussian(n, expectedDailyBirthsForGender * 0.42, Math.max(3, expectedDailyBirthsForGender * 0.15));
+            }
+          }
+
+          // Sharp cutoff for numbers exceeding actual domestic hospital births
+          if (n > expectedDailyBirthsForGender) {
+            const excess = n - expectedDailyBirthsForGender;
+            w *= Math.exp(-0.15 * excess);
+          }
+
+        } else if (cohortMode === 'retrospective') {
+          // Late registration, consular births abroad, residence permits (e.g. 254)
+          // Low chance in 1..40 (those slots were filled by immediate hospital entries)
+          if (n <= expectedDailyBirthsForGender) {
+            w = 0.005;
+          } else {
+            // Broad distribution in the extended registry queue (100 - 300)
+            w = gaussian(n, 220, 60) + 0.05 * Math.exp(-0.005 * n);
+          }
+
+        } else {
+          // Mixed model: 80% local hospital births + 20% long-tail retrospective entries
+          let localComponent = gaussian(n, expectedDailyBirthsForGender * 0.50, expectedDailyBirthsForGender * 0.38);
+          if (n > expectedDailyBirthsForGender) {
+            localComponent *= Math.exp(-0.12 * (n - expectedDailyBirthsForGender));
+          }
+          let retroComponent = (n > expectedDailyBirthsForGender * 0.8) ? (gaussian(n, 230, 70) * 0.35 + 0.02) : 0.005;
+          w = (localComponent * 0.82) + (retroComponent * 0.18);
         }
 
         weights.push({ nnn: n, weight: w });
@@ -857,7 +952,7 @@
 
       // Best single guess telemetry
       const maxProbCandidate = [...calculatedCandidates].sort((a, b) => b.prob - a.prob)[0];
-      const bestOdds = Math.round(1 / maxProbCandidate.prob);
+      const bestOdds = Math.max(1, Math.round(1 / maxProbCandidate.prob));
       document.getElementById('metric-best-val').textContent = `1 iš ${bestOdds}`;
       document.getElementById('metric-best-pct').textContent = `(${maxProbCandidate.pct.toFixed(2)}%)`;
 
@@ -870,14 +965,13 @@
       document.getElementById('bar-context-val').textContent = `1 iš ${bestOdds} (~${maxProbCandidate.pct.toFixed(2)}%)`;
       document.getElementById('bar-context-fill').style.width = `${Math.min(100, Math.max(12, maxProbCandidate.pct * 7.5))}%`;
 
-      const reduction = ((1 - (bestOdds / 1000)) * 100).toFixed(1);
+      const reduction = Math.max(0, ((1 - (bestOdds / 1000)) * 100)).toFixed(1);
       document.getElementById('reduction-pct-badge').textContent = `${reduction}% ${i18n[currentLang].reductionBadge}`;
 
       renderTable();
+      inspectCode();
     }
-  </script>
 
-  <script>
     function setSortMode(mode) {
       sortMode = mode;
       document.getElementById('btn-sort-prob').className = mode === 'prob' 
@@ -902,12 +996,11 @@
 
       const limit = parseInt(document.getElementById('tbl-limit').value, 10);
       const displayList = list.slice(0, limit);
-      const maxPct = Math.max(...calculatedCandidates.map(c => c.pct));
+      const maxPct = Math.max(...calculatedCandidates.map(c => c.pct), 0.0001);
 
       displayList.forEach((item, index) => {
         const tr = document.createElement('tr');
         tr.className = "hover:bg-zinc-100 transition-none border-b border-zinc-200";
-
         const relativeBarWidth = Math.max(2, Math.round((item.pct / maxPct) * 100));
 
         tr.innerHTML = `
@@ -935,68 +1028,90 @@
       });
 
       document.getElementById('tbl-total-shown').textContent = `${i18n[currentLang].tblTotalShown}${displayList.length}`;
-      document.getElementById('tbl-count-badge').textContent = `Top ${displayList.length}`;
     }
 
-    function copyToClipboard(text) {
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      textarea.style.position = 'fixed';
-      textarea.style.opacity = '0';
-      document.body.appendChild(textarea);
-      textarea.select();
-      try {
-        document.execCommand('copy');
-        showToast(`${i18n[currentLang].copiedToast}: ${text}`);
-      } catch (err) {
-        console.error('Copy failed', err);
+    // Inspect individual personal code and explain NNN range
+    function inspectCode() {
+      const input = document.getElementById('inspector-input');
+      const res = document.getElementById('inspector-result');
+      if (!input || !res) return;
+
+      const code = input.value.trim();
+      if (code.length !== 11 || !/^\d{11}$/.test(code)) {
+        res.innerHTML = `<span class="text-zinc-500">${currentLang === 'lt' ? 'Įveskite pilną 11 skaitmenų asmens kodą analizei.' : 'Enter a full 11-digit personal code to inspect.'}</span>`;
+        return;
       }
-      document.body.removeChild(textarea);
+
+      const G = parseInt(code[0], 10);
+      const yy = code.slice(1, 3);
+      const mm = code.slice(3, 5);
+      const dd = code.slice(5, 7);
+      const nnn = parseInt(code.slice(7, 10), 10);
+      const k = parseInt(code[10], 10);
+
+      const computedK = calculateChecksum(code.slice(0, 10));
+      const isValid = (k === computedK);
+
+      let century = 2000;
+      let genderStr = "Vyras";
+      if (G === 1) { century = 1800; genderStr = currentLang === 'lt' ? 'Vyras (XIX a.)' : 'Male (19th c.)'; }
+      else if (G === 2) { century = 1800; genderStr = currentLang === 'lt' ? 'Moteris (XIX a.)' : 'Female (19th c.)'; }
+      else if (G === 3) { century = 1900; genderStr = currentLang === 'lt' ? 'Vyras (XX a.)' : 'Male (20th c.)'; }
+      else if (G === 4) { century = 1900; genderStr = currentLang === 'lt' ? 'Moteris (XX a.)' : 'Female (20th c.)'; }
+      else if (G === 5) { century = 2000; genderStr = currentLang === 'lt' ? 'Vyras (XXI a.)' : 'Male (21st c.)'; }
+      else if (G === 6) { century = 2000; genderStr = currentLang === 'lt' ? 'Moteris (XXI a.)' : 'Female (21st c.)'; }
+
+      const fullYear = century + parseInt(yy, 10);
+
+      let nnnAnalysis = "";
+      if (nnn <= 60) {
+        nnnAnalysis = currentLang === 'lt' 
+          ? `NNN=${nnn}: Tiesioginis vietinis gimimas Lietuvos ligoninėje (eilė pagal paros registraciją).` 
+          : `NNN=${nnn}: Direct local hospital birth in Lithuania (regular daily registration queue).`;
+      } else {
+        nnnAnalysis = currentLang === 'lt'
+          ? `NNN=${nnn}: Padidintas eilės numeris! Pagal LR Gyventojų registro įstatymo 8 str. 2 d., tai yra „įrašymo į Gyventojų registrą eilės numeris“. Tai rodo vėlesnę registraciją, gimimą užsienyje (konsulinė registracija), užsienio pilietį (leidimas gyventi) arba rezervuoto registro bloko priskyrimą.`
+          : `NNN=${nnn}: Elevated sequence number! Per Art. 8 of the Population Register Law, this is the 'register entry order', indicating late declaration, consular registration abroad, residence permit holder, or designated queue block.`;
+      }
+
+      res.innerHTML = `
+        <div class="flex items-center justify-between border-b border-zinc-300 pb-1 mb-1">
+          <span class="font-bold ${isValid ? 'text-zinc-950' : 'text-red-700'}">
+            ${isValid ? i18n[currentLang].inspectorValid : i18n[currentLang].inspectorInvalid}
+          </span>
+          <span class="text-[10px] text-zinc-500">K = ${computedK}</span>
+        </div>
+        <div class="grid grid-cols-2 gap-1 text-[10px] text-zinc-700 mb-1">
+          <div>• Data: <strong>${fullYear}-${mm}-${dd}</strong></div>
+          <div>• Lytis: <strong>${genderStr}</strong></div>
+          <div>• NNN: <strong>${code.slice(7, 10)}</strong></div>
+          <div>• K: <strong>${k}</strong> ${isValid ? '✓' : '✗'}</div>
+        </div>
+        <div class="text-[10px] text-zinc-600 bg-white p-1.5 border border-zinc-200 leading-relaxed">
+          ${nnnAnalysis}
+        </div>
+      `;
     }
 
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      document.getElementById('toast-text').textContent = msg;
-      toast.classList.remove('translate-y-16', 'opacity-0');
-      setTimeout(() => {
-        toast.classList.add('translate-y-16', 'opacity-0');
-      }, 2000);
-    }
-  </script>
-
-  <script>
     function renderHistoricalTable() {
       const tbody = document.getElementById('hist-tbody');
+      if (!tbody) return;
       tbody.innerHTML = '';
 
-      const milestones = [
-        { era: "1960 m. (Pikas)", year: 1960, births: 62500 },
-        { era: "1970 m.", year: 1970, births: 55500 },
-        { era: "1985 m. (Vėlyvasis SSRS)", year: 1985, births: 54000 },
-        { era: "1990 m. (Kovo 11-oji)", year: 1990, births: 56900 },
-        { era: "2000 m. (Tūkstantmetis)", year: 2000, births: 34150 },
-        { era: "2008 m. (Nagrinėjamas)", year: 2008, births: 35065 },
-        { era: "2020 m. (Pandemija)", year: 2020, births: 25144 },
-        { era: "2023–2024 m. (Dabartis)", year: 2023, births: 20600 }
-      ];
-
-      milestones.forEach(m => {
-        const daily = Math.round(m.births / 365.25);
-        const genderDaily = Math.round(daily * 0.513);
-        const maxNnn = Math.round(genderDaily * 1.3);
-
-        const isCurrentYear = (m.year === 2008);
+      DEMOGRAPHICS.forEach(d => {
         const tr = document.createElement('tr');
-        tr.className = isCurrentYear 
-          ? "bg-zinc-200 font-bold border-l-2 border-zinc-900" 
-          : "hover:bg-zinc-50";
+        tr.className = "hover:bg-zinc-100 border-b border-zinc-200";
+
+        const daily = Math.round(d.births / 365.25);
+        const perGender = Math.round(daily * 0.513);
+        const effectiveSpace = `001 – ~${String(Math.round(perGender * 1.15)).padStart(3, '0')}`;
 
         tr.innerHTML = `
-          <td class="py-1.5 px-3 text-zinc-900">${m.era}</td>
-          <td class="py-1.5 px-3 text-zinc-700">${m.births.toLocaleString('lt-LT')}</td>
+          <td class="py-1.5 px-3 font-bold text-zinc-900">${d.label}</td>
+          <td class="py-1.5 px-3 text-zinc-700">${d.births.toLocaleString('lt-LT')}</td>
           <td class="py-1.5 px-3 text-zinc-700">~${daily}</td>
-          <td class="py-1.5 px-3 text-zinc-950 font-bold">~${genderDaily}</td>
-          <td class="py-1.5 px-3"><span class="bg-zinc-100 border border-zinc-300 text-zinc-800 px-1.5 py-0.5 text-[10px] mono">001 – 0${maxNnn}</span></td>
+          <td class="py-1.5 px-3 text-zinc-900 font-semibold">~${perGender}</td>
+          <td class="py-1.5 px-3 font-mono font-bold text-zinc-900 bg-zinc-50">${effectiveSpace}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -1006,16 +1121,25 @@
       if (type === '2008-male-weekday') {
         document.querySelector('input[name="gender"][value="male"]').checked = true;
         setDateDropdowns(2008, 5, 14);
+        document.getElementById('cohort-mode').value = 'local';
         document.getElementById('time-hint').value = 'daytime';
+        document.getElementById('c-section-toggle').checked = false;
+      } else if (type === '2018-high') {
+        document.querySelector('input[name="gender"][value="male"]').checked = true;
+        setDateDropdowns(2018, 5, 28);
+        document.getElementById('cohort-mode').value = 'retrospective';
+        document.getElementById('time-hint').value = 'unknown';
         document.getElementById('c-section-toggle').checked = false;
       } else if (type === '1960-boom') {
         document.querySelector('input[name="gender"][value="female"]').checked = true;
         setDateDropdowns(1960, 7, 12);
+        document.getElementById('cohort-mode').value = 'local';
         document.getElementById('time-hint').value = 'unknown';
         document.getElementById('c-section-toggle').checked = false;
       } else if (type === '2023-low') {
         document.querySelector('input[name="gender"][value="male"]').checked = true;
         setDateDropdowns(2023, 11, 20);
+        document.getElementById('cohort-mode').value = 'local';
         document.getElementById('time-hint').value = 'daytime';
         document.getElementById('c-section-toggle').checked = true;
       }
@@ -1052,12 +1176,19 @@
       document.getElementById('lbl-dob-day').textContent = dict.dayLabel;
       renderMonthOptions();
       document.getElementById('lbl-weekday-title').textContent = dict.weekdayTitle;
+      document.getElementById('lbl-season-title').textContent = dict.seasonTitle;
+      document.getElementById('lbl-cohort').textContent = dict.cohortLabel;
+      document.getElementById('opt-cohort-local').textContent = dict.cohortLocal;
+      document.getElementById('opt-cohort-mixed').textContent = dict.cohortMixed;
+      document.getElementById('opt-cohort-retro').textContent = dict.cohortRetro;
+      document.getElementById('cohort-desc').textContent = dict.cohortDesc;
+      document.getElementById('lbl-inspector-title').textContent = dict.inspectorTitle;
+      document.getElementById('lbl-inspector-sub').textContent = dict.inspectorSub;
       document.getElementById('lbl-time-hint').textContent = dict.timeHint;
       document.getElementById('opt-time-unknown').textContent = dict.timeUnknown;
       document.getElementById('opt-time-early').textContent = dict.timeEarly;
       document.getElementById('opt-time-day').textContent = dict.timeDay;
       document.getElementById('opt-time-evening').textContent = dict.timeEvening;
-      document.getElementById('time-hint-desc').textContent = dict.timeHintDesc;
       document.getElementById('lbl-csection').textContent = dict.csection;
       document.getElementById('csection-desc').textContent = dict.csectionDesc;
       document.getElementById('lbl-presets').textContent = dict.presets;
@@ -1096,12 +1227,36 @@
       document.getElementById('th-hist-space').textContent = dict.thHistSpace;
       document.getElementById('hist-explanation').innerHTML = dict.histExplanation;
       document.getElementById('algo-heading').textContent = dict.algoHeading;
-      document.getElementById('algo-desc').innerHTML = dict.algoDesc;
+      document.getElementById('lbl-why-high-nnn').textContent = dict.whyHighNnnTitle;
+      document.getElementById('desc-why-high-nnn').innerHTML = dict.whyHighNnnDesc;
       document.getElementById('sec-rule-title').textContent = dict.secRuleTitle;
       document.getElementById('sec-rule-desc').innerHTML = dict.secRuleDesc;
       document.getElementById('footer-copy').textContent = dict.footerCopy;
 
       recalculate();
+    }
+
+    function copyToClipboard(text) {
+      const el = document.createElement('textarea');
+      el.value = text;
+      el.setAttribute('readonly', '');
+      el.style.position = 'absolute';
+      el.style.left = '-9999px';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+
+      const toast = document.getElementById('toast');
+      const toastText = document.getElementById('toast-text');
+      toastText.textContent = `${i18n[currentLang].copiedToast}: ${text}`;
+      toast.classList.remove('translate-y-16', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-16', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 2000);
     }
 
     window.onload = function() {
