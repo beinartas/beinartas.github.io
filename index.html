@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>beinartas.lt</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #111;
+            -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+            overflow: hidden;
+            font-family: sans-serif;
+        }
+
+        .box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
+        }
+
+        /* Base WebGL canvas - This is what the user sees */
+        #glcanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            z-index: 0;
+        }
+
+        /* Hidden canvas for drawing HUD texture */
+        #overlay-canvas {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <canvas id="glcanvas"></canvas>
+        <canvas id="overlay-canvas"></canvas>
+    </div>
+
+    <!-- SHARED VERTEX SHADER -->
+    <script id="vs" type="x-shader/x-vertex">
+        attribute vec2 a_position;
+        varying vec2 v_uv;
+        void main() {
+            // Map -1..1 to 0..1 for texture coordinates
+            v_uv = (a_position + 1.0) * 0.5;
+            gl_Position = vec4(a_position, 0, 1);
+        }
+    </script>
+
+    <!-- PASS 1: FRACTAL SHADER (Renders to Texture) -->
+    <script id="fs-fractal" type="x-shader/x-fragment">
+        precision highp float;
+        
+        uniform vec2 u_resolution;
+        uniform vec2 u_pan;
+        uniform float u_zoom;
+        uniform float u_darkness;
+        uniform float u_blur; 
+        uniform float u_time;
+        uniform int u_maxIterations;
+
+        float computeBrightness(vec2 coord) {
+            vec2 c = (coord - u_resolution * 0.5) / u_zoom - u_pan;
+            float t = u_time * 0.5; 
+            vec2 z = vec2(sin(t * 1.1), cos(t)) * 0.002; 
+            
+            float iter = 0.0;
+            bool escaped = false;
+            
+            for (int i = 0; i < 2000; i++) {
+                if (i >= u_maxIterations) break;
+                
+                float x = (z.x * z.x - z.y * z.y) + c.x;
+                float y = (2.0 * z.x * z.y) + c.y;
+                
+                z.x = x;
+                z.y = y;
+
+                if (dot(z, z) > 4.0) {
+                    iter = float(i);
+                    escaped = true;
+                    break;
+                }
+            }
+
+            if (escaped) {
+                float tVal = 0.5 + 0.5 * sin(iter * 0.15 * u_darkness + u_time * 0.2);
+                return tVal * 0.35; 
+            } else {
+                return 0.0;
+            }
+        }
+
+        void main() {
+            vec2 st = gl_FragCoord.xy;
+            float val = 0.0;
+            float total = 0.0;
+
+            val += computeBrightness(st);
+            total += 1.0;
+
+            if (u_blur > 0.01) {
+                val += computeBrightness(st + vec2(u_blur, u_blur));
+                val += computeBrightness(st + vec2(-u_blur, -u_blur));
+                total += 2.0;
+            }
+
+            float finalVal = val / total;
+            gl_FragColor = vec4(vec3(finalVal), 1.0);
+        }
+    </script>
+
+    <!-- PASS 2: CRT SHADER (Renders Fractal + HUD to Screen) -->
+    <script id="fs-crt" type="x-shader/x-fragment">
+        precision highp float;
+
+        uniform sampler2D u_texture;    // Fractal Texture
+        uniform sampler2D u_hudTexture; // HUD Texture
+        uniform vec2 u_resolution;
+        uniform float u_time;
+
+        varying vec2 v_uv;
+
+        // Curvature distortion
+        vec2 curve(vec2 uv) {
+            uv = (uv - 0.5) * 2.0;
+            uv *= 1.1; 
+            uv.x *= 1.0 + pow((abs(uv.y) / 5.0), 2.0);
+            uv.y *= 1.0 + pow((abs(uv.x) / 4.0), 2.0);
+            uv  = (uv / 2.0) + 0.5;
+            uv =  uv * 0.92 + 0.04;
+            return uv;
+        }
+
+        // Helper to mix Fractal + HUD before splitting channels
+        vec3 getScan(vec2 pos) {
+            vec3 frac = texture2D(u_texture, pos).rgb;
+            vec4 hud = texture2D(u_hudTexture, pos);
+            // Blend HUD over Fractal
+            // Using straight blending (assuming premultiplied alpha or standard blending)
+            return mix(frac, hud.rgb, hud.a); 
+        }
+
+        void main() {
+            vec2 uv = v_uv;
+            uv = curve(uv);
+            
+            vec3 col;
+            
+            // Chromatic aberration (RGB shift)
+            // Modified to use getScan() so both HUD and Fractal split together
+            float x =  sin(0.3 * u_time + uv.y * 21.0) * sin(u_time * 0.2 + uv.y * 29.0) * sin(0.3 + 0.33 * u_time + uv.y * 31.0) * 0.0017;
+
+            // Red
+            col.r = getScan(vec2(x + uv.x + 0.001, uv.y + 0.001)).r + 0.05;
+            col.r += 0.08 * getScan(0.75 * vec2(x + 0.025, -0.027) + vec2(uv.x + 0.001, uv.y + 0.001)).r;
+
+            // Green
+            col.g = getScan(vec2(x + uv.x + 0.000, uv.y - 0.002)).g + 0.05;
+            col.g += 0.05 * getScan(0.75 * vec2(x + -0.022, -0.02) + vec2(uv.x + 0.000, uv.y - 0.002)).g;
+
+            // Blue
+            col.b = getScan(vec2(x + uv.x - 0.002, uv.y + 0.000)).b + 0.05;
+            col.b += 0.08 * getScan(0.75 * vec2(x + -0.02, -0.018) + vec2(uv.x - 0.002, uv.y + 0.000)).b;
+
+            // Vignette
+            float vig = (0.0 + 1.0 * 16.0 * uv.x * uv.y * (1.0 - uv.x) * (1.0 - uv.y));
+            col *= vec3(pow(vig, 0.3));
+
+            // Scanlines
+            col *= vec3(0.95, 1.05, 0.95);
+            col *= 2.8;
+            float scans = clamp(0.35 + 0.35 * sin(3.5 * u_time + uv.y * u_resolution.y * 1.5), 0.0, 1.0);
+            float s = pow(scans, 1.7);
+            col = col * vec3(0.4 + 0.7 * s);
+
+            // Brightness Boost
+            col *= 1.0 + 0.01 * sin(110.0 * u_time);
+            
+            // Black out edges outside curvature
+            if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+                col *= 0.0;
+            }
+
+            gl_FragColor = vec4(col, 1.0);
+        }
+    </script>
+
+    <script>
+        // --- DATA ---
+        var places = [
+            { x: -0.7453, y: 0.1127, z: 0.0065 },
+            { x: -0.7463, y: 0.1102, z: 0.005 },
+            { x: -0.74529, y: 0.113075, z: 0.00015 },
+            { x: -0.745428, y: 0.113009, z: 0.005 },
+            { x: -0.16, y: 1.0405, z: 0.026 },
+            { x: -0.925, y: 0.266, z: 0.032 },
+            { x: -0.748, y: 0.1, z: 0.0014 },
+            { x: -0.235125, y: 0.827215, z: 0.0004 },
+            { x: -0.235125, y: 0.827215, z: 0.0004 },
+            { x: -0.748, y: 0.1, z: 0.0014 },
+            { x: -0.235125, y: 0.827215, z: 4.0E-3 },
+            { x: -1.315180982097868, y: 0.073481649996795, z: 1.0E-2 },
+            { x: -0.156653458, y: 1.039128122, z: 2.0E-3 },
+            { x: -0.16070135, y: 1.0375665, z: 1.0E-3 },
+            { x: 0.2549870375144766, y: -0.0005679790528465, z: 0.5E-1 },
+            { x: 0.267235642726, y: -0.003347589624, z: 1.15E-2 }
+        ];
+
+        // --- WEBGL SETUP ---
+        var canvas = document.getElementById("glcanvas");
+        var gl = canvas.getContext("webgl");
+
+        if (!gl) {
+            alert("WebGL not supported, please use a modern browser.");
+        }
+
+        function createShader(gl, type, sourceId) {
+            var source = document.getElementById(sourceId).text;
+            var shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                console.error("Shader error in " + sourceId + ": " + gl.getShaderInfoLog(shader));
+                gl.deleteShader(shader);
+                return null;
+            }
+            return shader;
+        }
+
+        function createProgram(gl, vsId, fsId) {
+            var vs = createShader(gl, gl.VERTEX_SHADER, vsId);
+            var fs = createShader(gl, gl.FRAGMENT_SHADER, fsId);
+            var prog = gl.createProgram();
+            gl.attachShader(prog, vs);
+            gl.attachShader(prog, fs);
+            gl.linkProgram(prog);
+            if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+                console.error("Program Link Error: " + gl.getProgramInfoLog(prog));
+            }
+            return prog;
+        }
+
+        // --- CREATE PROGRAMS ---
+        // 1. Fractal Program (renders logic to texture)
+        var progFractal = createProgram(gl, "vs", "fs-fractal");
+        var locF_res = gl.getUniformLocation(progFractal, "u_resolution");
+        var locF_pan = gl.getUniformLocation(progFractal, "u_pan");
+        var locF_zoom = gl.getUniformLocation(progFractal, "u_zoom");
+        var locF_dark = gl.getUniformLocation(progFractal, "u_darkness");
+        var locF_blur = gl.getUniformLocation(progFractal, "u_blur");
+        var locF_time = gl.getUniformLocation(progFractal, "u_time");
+        var locF_iter = gl.getUniformLocation(progFractal, "u_maxIterations");
+        var locF_pos  = gl.getAttribLocation(progFractal, "a_position");
+
+        // 2. CRT Program (renders texture to screen)
+        var progCRT = createProgram(gl, "vs", "fs-crt");
+        var locC_tex = gl.getUniformLocation(progCRT, "u_texture");
+        var locC_hud = gl.getUniformLocation(progCRT, "u_hudTexture"); // New Uniform
+        var locC_res = gl.getUniformLocation(progCRT, "u_resolution");
+        var locC_time = gl.getUniformLocation(progCRT, "u_time");
+        var locC_pos  = gl.getAttribLocation(progCRT, "a_position");
+
+        // --- BUFFER ---
+        var positionBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        var positions = [ -1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1 ];
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+
+        // --- FBO & TEXTURE SETUP ---
+        const TARGET_WIDTH = 320; 
+        var targetHeight = 240; 
+        
+        // Texture A: Fractal Result
+        var offscreenTexture = gl.createTexture();
+        var fbo = gl.createFramebuffer();
+
+        // Texture B: HUD Result
+        var hudTexture = gl.createTexture();
+
+        // --- OVERLAY SETUP ---
+        var overlayCanvas = document.getElementById("overlay-canvas");
+        var overlayCtx = overlayCanvas.getContext("2d");
+
+        function resize() {
+            // 1. Resize Main Canvas to Window (High Res for CRT scanlines)
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // 2. Resize Overlay Canvas to match low-res render target
+            // This ensures the HUD is blocky and matches the fractal style
+            var aspectRatio = window.innerWidth / window.innerHeight;
+            targetHeight = Math.round(TARGET_WIDTH / aspectRatio);
+
+            overlayCanvas.width = TARGET_WIDTH;
+            overlayCanvas.height = targetHeight;
+
+            // 3. Resize Fractal Texture
+            gl.bindTexture(gl.TEXTURE_2D, offscreenTexture);
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, TARGET_WIDTH, targetHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+            // 4. Attach Fractal Texture to FBO
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, offscreenTexture, 0);
+
+            // 5. Initialize HUD Texture
+            gl.bindTexture(gl.TEXTURE_2D, hudTexture);
+            // We don't upload data yet, just set parameters
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        function drawOverlay(fpsVal, iterVal, timerVal) {
+            var w = overlayCanvas.width;
+            var h = overlayCanvas.height;
+            var cx = Math.floor(w / 2);
+            var cy = Math.floor(h / 2);
+            var scopeColor = "rgba(255, 255, 255, 0.6)"; // Solid Green
+
+            overlayCtx.clearRect(0, 0, w, h);
+            overlayCtx.strokeStyle = scopeColor;
+            overlayCtx.lineWidth = 2; // Thinner lines for low res      
+            
+            overlayCtx.save();
+            overlayCtx.translate(0.5, 0.5); // Pixel snapping for low res
+            overlayCtx.beginPath();
+
+            // Center Crosshair
+            var centerSize = 4; 
+            overlayCtx.moveTo(cx - centerSize, cy);
+            overlayCtx.lineTo(cx + centerSize, cy);
+            overlayCtx.moveTo(cx, cy - centerSize);
+            overlayCtx.lineTo(cx, cy + centerSize);
+
+            // Corner Crosses
+            var cornerSize = 3;
+            var padding = 10;
+            
+            // Top-Left
+            overlayCtx.moveTo(padding, padding + cornerSize);
+            overlayCtx.lineTo(padding, padding);
+            overlayCtx.lineTo(padding + cornerSize, padding);
+            
+            // Bottom-Right
+            overlayCtx.moveTo(w - padding, h - padding - cornerSize);
+            overlayCtx.lineTo(w - padding, h - padding);
+            overlayCtx.lineTo(w - padding - cornerSize, h - padding);
+            
+            // Bottom-Left
+            overlayCtx.moveTo(padding + cornerSize, h - padding);
+            overlayCtx.lineTo(padding, h - padding);
+            overlayCtx.lineTo(padding, h - padding - cornerSize);
+
+            // Ticks
+            var tickSize = 4;
+            var tickSpacing = 20;
+            for(var i = tickSpacing; i < cx - 20; i += tickSpacing) {
+                overlayCtx.moveTo(cx + i, cy - tickSize); overlayCtx.lineTo(cx + i, cy + tickSize);
+                overlayCtx.moveTo(cx - i, cy - tickSize); overlayCtx.lineTo(cx - i, cy + tickSize);
+                overlayCtx.moveTo(cx - tickSize, cy + i); overlayCtx.lineTo(cx + tickSize, cy + i);
+                overlayCtx.moveTo(cx - tickSize, cy - i); overlayCtx.lineTo(cx + tickSize, cy - i);
+            }
+            overlayCtx.stroke();
+
+            // --- TEXT DRAWING ---
+            overlayCtx.fillStyle = scopeColor;
+            // Use a pixel font compatible size
+            overlayCtx.font = "10px monospace"; 
+            overlayCtx.textAlign = "right";
+            overlayCtx.textBaseline = "top";
+            
+            var tx = w - padding;
+            var ty = padding;
+            var lh = 10;
+
+            overlayCtx.fillText("FPS  " + Math.round(fpsVal).toString().padStart(3, '0'), tx, ty);
+            overlayCtx.fillText("RES  " + w + "x" + h, tx, ty + lh);
+            overlayCtx.fillText("ITER " + Math.floor(iterVal).toString().padStart(4, '0'), tx, ty + lh * 2);
+            overlayCtx.fillText("NEXT " + timerVal, tx, ty + lh * 3);
+            
+            overlayCtx.restore();
+        }
+
+        // --- STATE & ANIMATION ---
+        var maxIterations = 300; 
+        var panX = 0, panY = 0;
+        var moveX = 0, moveY = 0;
+        var magnificationFactor = 200;
+        var darkness = 1;
+        var focusOffset = 0; 
+        var baseDarkness = 1.0;
+        var lastDrawTime = 0;
+        var fps = 60;
+
+        function draw(time) {
+            requestAnimationFrame(draw);
+
+            if (lastDrawTime === 0) {
+                lastDrawTime = time;
+                return;
+            }
+
+            var delta = time - lastDrawTime;
+            lastDrawTime = time;
+            fps = 1000 / delta;
+            var timeScale = delta / 16.66; 
+
+            // --- LOGIC UPDATES ---
+            var zoomOscillation = Math.sin(time / 800) + 1.2; 
+            var zoomNoise = 1.0 + (Math.random() - 0.5) * 0.5; 
+            var currentZoomSpeed = 0.00005 * zoomOscillation * zoomNoise;
+            magnificationFactor += (magnificationFactor * currentZoomSpeed * timeScale);
+
+            var jitterStrength = 2; 
+            var jitterX = (Math.random() - 0.5) * jitterStrength / magnificationFactor * timeScale;
+            var jitterY = (Math.random() - 0.5) * jitterStrength / magnificationFactor * timeScale;
+            panX += jitterX;
+            panY += jitterY;
+
+            moveX += (Math.random() - 0.5) * 0.1 * timeScale;
+            moveY += (Math.random() - 0.5) * 0.1 * timeScale;
+            moveX = Math.max(-8, Math.min(8, moveX));
+            moveY = Math.max(-8, Math.min(8, moveY));
+
+            var driftStrength = 0.5; 
+            panX += (moveX * driftStrength / magnificationFactor * timeScale);
+            panY += (moveY * driftStrength / magnificationFactor * timeScale);
+
+            var focusTarget = (Math.sin(time * 0.002) + 1.0) * 0.5; 
+            if(Math.random() > 0.95) focusTarget += (Math.random() * 2.0);
+            focusOffset += (focusTarget - focusOffset) * 0.05 * timeScale;
+
+            darkness = baseDarkness + (focusOffset * 0.5) + ((Math.random()-0.5) * 0.1); 
+            var blurAmount = Math.max(0, focusOffset * 2.0); 
+
+            if (fps > 55 && maxIterations < 1500) maxIterations += (1 * timeScale);
+            if (fps < 30 && maxIterations > 100) maxIterations -= (2 * timeScale);
+
+            // --- RENDER PASS 1: Fractal to Texture (Low Res) ---
+            gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+            gl.viewport(0, 0, TARGET_WIDTH, targetHeight);
+            
+            gl.useProgram(progFractal);
+            gl.enableVertexAttribArray(locF_pos);
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+            gl.vertexAttribPointer(locF_pos, 2, gl.FLOAT, false, 0, 0);
+
+            // Send Fractal Uniforms
+            gl.uniform2f(locF_res, TARGET_WIDTH, targetHeight);
+            gl.uniform2f(locF_pan, panX, panY);
+            gl.uniform1f(locF_zoom, magnificationFactor);
+            gl.uniform1f(locF_dark, darkness);
+            gl.uniform1f(locF_blur, blurAmount); 
+            gl.uniform1f(locF_time, time * 0.001);
+            gl.uniform1i(locF_iter, Math.floor(maxIterations));
+
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+            // --- HUD UPDATE & UPLOAD ---
+            var timerStr = "--";
+            if(nextAutoChangeTime) {
+                var timeLeft = Math.max(0, (nextAutoChangeTime - Date.now()) / 1000);
+                timerStr = timeLeft.toFixed(1) + "s";
+            }
+            drawOverlay(fps, maxIterations, timerStr);
+
+            // Upload 2D Canvas to WebGL Texture
+            gl.activeTexture(gl.TEXTURE1); // Use unit 1 for HUD
+            gl.bindTexture(gl.TEXTURE_2D, hudTexture);
+            // Flip Y so canvas matches WebGL coords
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true); 
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, overlayCanvas);
+            gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false); // Reset
+
+            // --- RENDER PASS 2: Texture to Screen (High Res CRT) ---
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            gl.viewport(0, 0, canvas.width, canvas.height);
+
+            gl.useProgram(progCRT);
+            gl.enableVertexAttribArray(locC_pos);
+            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+            gl.vertexAttribPointer(locC_pos, 2, gl.FLOAT, false, 0, 0);
+
+            // Bind Texture 0 (Fractal)
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, offscreenTexture);
+            gl.uniform1i(locC_tex, 0);
+
+            // Bind Texture 1 (HUD)
+            // (Already bound to TEXTURE1 above, but good practice to be explicit if switching)
+            gl.uniform1i(locC_hud, 1);
+
+            // Send CRT Uniforms
+            gl.uniform2f(locC_res, canvas.width, canvas.height);
+            gl.uniform1f(locC_time, time * 0.001);
+
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+        }
+
+        // --- NAVIGATION LOGIC ---
+        function setPlace(id) {
+            baseDarkness = getRandomIntInclusive(1, 3);
+            focusOffset = 2.0; 
+            panX = places[id].x * -1;
+            panY = places[id].y * -1;
+            magnificationFactor = places[id].z * 1e7;
+            moveX = getRandomIntInclusive(-5, 5);
+            moveY = getRandomIntInclusive(-5, 5);
+        }
+
+        function getRandomIntInclusive(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        var autoChangeTimeout;
+        var nextAutoChangeTime;
+
+        function scheduleNextAutoChange() {
+            clearTimeout(autoChangeTimeout);
+            var delay = 3000 + getRandomIntInclusive(1, 6) * 500;
+            nextAutoChangeTime = Date.now() + delay;
+            autoChangeTimeout = setTimeout(function() {
+                setPlace(getRandomIntInclusive(0, places.length - 1));
+                scheduleNextAutoChange();
+            }, delay);
+        }
+
+        setPlace(getRandomIntInclusive(0, places.length - 1));
+        scheduleNextAutoChange();
+        requestAnimationFrame(draw);
+
+        canvas.addEventListener('click', function () {
+            setPlace(getRandomIntInclusive(0, places.length - 1));
+            scheduleNextAutoChange();
+        });
+
+    </script>
+</body>
+</html>
